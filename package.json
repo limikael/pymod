@@ -1,0 +1,12 @@
+{
+  "name": "pymod",
+  "version": "1.0.0",
+  "description": "Call python functions from JavaScript",
+  "type": "module",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "devDependencies": {
+    "jasmine": "^5.12.0"
+  }
+}
