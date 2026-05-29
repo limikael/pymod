@@ -8,5 +8,10 @@
   },
   "devDependencies": {
     "jasmine": "^5.12.0"
+  },
+  "exports": {
+    ".": {
+      "node": "./src/exports-node.js"
+    }
   }
 }
