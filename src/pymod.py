@@ -52,7 +52,7 @@ class ModuleRunner:
     def handleLine(self, line):
         #print("got line in python:",line)
         message=json.loads(line)
-        asyncio.create_task(self.handleMessage(message))
+        handle_message_task=asyncio.create_task(self.handleMessage(message))
 
     def send(self, message):
         self.wfd.write(json.dumps(message)+"\n")
@@ -71,7 +71,7 @@ class ModuleRunner:
             module_path=sys.argv[1]
             #print("loading module: "+module_path)
             self.mod=load_module_from_file("pymod",module_path)
-            asyncio.create_task(line_reader(3,self.handleLine))
+            line_task=asyncio.create_task(line_reader(3,self.handleLine))
             builtins.emit=self.emit
             self.send({
                 "type": "start"
@@ -84,7 +84,11 @@ class ModuleRunner:
             })
 
         # loop forever
-        await asyncio.Event().wait()
+        try:
+            await asyncio.Event().wait()
+
+        finally:
+            print("awfawfawfawef........")
 
 if __name__ == "__main__":
     module_runner=ModuleRunner()

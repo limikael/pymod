@@ -10,9 +10,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export class PythonModule extends EventEmitter {
 	static instances=[];
 
-	constructor(modulePath) {
+	constructor(modulePath, {uv}={}) {
 		super();
 
+		this.uv=uv;
 		this.nextCallId=1;
 		this.modulePath=modulePath;
 		this.callPromises={};
@@ -84,9 +85,17 @@ export class PythonModule extends EventEmitter {
 			throw new Error("Already started");
 
 		this.startPromise=new ResolvablePromise();
-		this.process=spawn("python",[path.join(__dirname,"pymod.py"),this.modulePath],{
-			stdio: ["ignore", "inherit", "inherit", "pipe", "pipe"], 
-		})
+		if (this.uv) {
+			this.process=spawn("uv",["run","python",path.join(__dirname,"pymod.py"),this.modulePath],{
+				stdio: ["ignore", "inherit", "inherit", "pipe", "pipe"], 
+			});
+		}
+
+		else {
+			this.process=spawn("python",[path.join(__dirname,"pymod.py"),this.modulePath],{
+				stdio: ["ignore", "inherit", "inherit", "pipe", "pipe"], 
+			});
+		}
 
 		this.controlIn=this.process.stdio[3];  // JS -> Python
 		this.controlOut=this.process.stdio[4]; // Python -> JS
@@ -122,8 +131,8 @@ process.on("SIGINT", ()=>PythonModule.exitCleanup("SIGINT"));
 process.on("SIGTERM", ()=>PythonModule.exitCleanup("SIGTERM"));
 process.on("uncaughtException", ()=>PythonModule.exitCleanup("uncaughtException"));
 
-export async function importPython(modulePath) {
-	let mod=new PythonModule(modulePath);
+export async function importPython(modulePath, options={}) {
+	let mod=new PythonModule(modulePath, options);
 	await mod.start();
 
 	return mod.proxy;
